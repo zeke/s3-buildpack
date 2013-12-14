@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# bin/detect <build-dir>
+
+if [ -f $1/index.html ] || [ -f $1/public/index.html ]; then
+  echo "S3 Static Site"
+  exit 0
+else
+  exit 1
+fi

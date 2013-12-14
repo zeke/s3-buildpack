@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -e            # fail fast
+set -o pipefail   # don't ignore exit codes when piping output
+# set -x          # enable debugging
+
+# Configure directories
+build_dir=$1
+cache_dir=$2
+env_file=$3
+bp_dir=$(cd $(dirname $0); cd ..; pwd)
+
+# Load some convenience functions like status(), echo(), and indent()
+source $bp_dir/bin/common.sh
+
+if [ "$env_file" ]; then
+  status "Importing application config vars"
+  export $(egrep -v "^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)" "$env_file")
+fi
+
+if [ -z "$S3_BUCKET" ] || [ -z "$S3_ACCESS_KEY_ID" ] || [ -z "$S3_SECRET_ACCESS_KEY" ]; then
+  error "S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY not set"
+fi
+
+./vendor/boto/s3put -a $S3_ACCESS_KEY_ID -s $S3_SECRET_ACCESS_KEY -b $S3_BUCKET $build_dir/index.html
